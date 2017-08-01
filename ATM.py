@@ -4,6 +4,10 @@ import time
 import pdb
 '''logging.basicConfig(level=logging.DEBUG,
                     format='(%(threadName)-10s) %(message)s',)'''
+					
+					
+
+	
 
 class Person(object):
 	def __init__(self,name):
@@ -14,21 +18,53 @@ class Person(object):
 		
 	def get_name(self):
 		return self.__name
+
+
+class Storage(object):
+	sto={}	
+	@staticmethod
+	def add_it(inp1,inp2):
+		Storage.sto[inp1]=inp2
 		
-	
+	@staticmethod	
+	def search(inp):
+		lock=threading.RLock()
+		lock.acquire()
+		#pdb.set_trace()
+		flag=False
+		ans=None
+		for k in Storage.sto.keys():
+			if k==inp:
+				flag=True
+				ans=Storage.sto[k]
+				break
+		if flag==False:
+			lock.release()
+			return None
+		else:
+			lock.release()
+			return ans
+			
+			
 class Account(object):
 	def __init__(self):
 		self.__balance=10
 		self.person=None
 		self.account=None
-		self.lock=threading.Lock()
+		self.lock=threading.RLock()
 		
 		
 	def get_account(self,p):
-		if self.account==None:
+		#pdb.set_trace()
+		val=Storage.search(p)
+		if self.account==None and val==None:
 			self.account=Account()
-		self.account.person=p
-		return self.account
+			self.account.person=p
+			Storage.add_it(p,self.account)
+			return self.account
+		else:
+			return val
+		
 		
 	
 	def get_balance(self):
